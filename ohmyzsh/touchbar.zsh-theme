@@ -28,6 +28,18 @@ git_current_branch() {
   echo ${ref#refs/heads/}
 }
 
+# Gevelop or master
+git_master_or_dev() {
+  local ref
+  ref=$(command git symbolic-ref --quiet HEAD 2> /dev/null)
+  if [[ $ref == "refs/heads/develop" ]]
+  then
+    echo master
+  else
+    echo develop
+  fi
+}
+
 # Uncommitted changes.
 # Check for uncommitted changes in the index.
 git_uncomitted() {
@@ -139,13 +151,13 @@ function _displayDefault() {
 
     [ -n "${indicators}" ] && touchbarIndicators="🔥[${indicators}]" || touchbarIndicators="🙌";
 
-    pecho "\033]1337;SetKeyLabel=F2=🎋 $(git_current_branch)\a"
+    pecho "\033]1337;SetKeyLabel=F2=🎋 $(git_master_or_dev)\a"
     pecho "\033]1337;SetKeyLabel=F3=$touchbarIndicators\a"
     pecho "\033]1337;SetKeyLabel=F4=✉️ push\a";
     pecho "\033]1337;SetKeyLabel=F5=☁gst\a";
 
     # bind git actions
-    bindkey -s '^[OQ' 'git branch -a \n'
+    bindkey -s '^[OQ' 'gco $(git_master_or_dev); git pull \n'
     bindkey -s '^[OR' 'git status \n'
     bindkey -s '^[OS' "git push origin $(git_current_branch) \n"
     bindkey -s '^[[15~' "git diff \n"
@@ -194,4 +206,3 @@ precmd_iterm_touchbar() {
 
 autoload -Uz add-zsh-hook
 add-zsh-hook precmd precmd_iterm_touchbar
-
